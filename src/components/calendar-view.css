@@ -1,0 +1,142 @@
+/*
+ * Overrides visuais do FullCalendar — estilo Untitled UI (specs/01 e specs/05).
+ * O FullCalendar injeta seu próprio CSS base via JS; aqui sobrescrevemos as
+ * custom properties `--fc-*` e algumas classes estruturais para bater com os
+ * tokens do design system (hairlines finas, tipografia discreta, sem bordas
+ * duplas, wash sutil para "hoje").
+ */
+
+.fc {
+  --fc-border-color: var(--hairline);
+  --fc-page-bg-color: var(--bg-surface);
+  --fc-neutral-bg-color: var(--bg-subtle);
+  --fc-neutral-text-color: var(--ink-muted);
+  --fc-today-bg-color: var(--accent-subtle);
+  --fc-now-indicator-color: var(--accent);
+  --fc-event-bg-color: transparent;
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: var(--ink-primary);
+  --fc-highlight-color: var(--accent-subtle);
+  --fc-more-link-bg-color: var(--bg-subtle);
+  --fc-more-link-text-color: var(--ink-secondary);
+  --fc-small-font-size: 0.75rem;
+  --fc-daygrid-event-dot-width: 0px;
+  font-family: inherit;
+}
+
+/* Card único ao redor da grade — a hairline vem do container em
+   calendar-view.tsx; aqui só removemos a borda externa duplicada do FC. */
+.fc .fc-scrollgrid {
+  border-color: var(--hairline);
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border-color: var(--hairline);
+}
+
+/* Cabeçalho dos dias da semana */
+.fc .fc-col-header-cell-cushion {
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  text-transform: capitalize;
+  text-decoration: none;
+}
+
+/* Números dos dias (mês) */
+.fc .fc-daygrid-day-number {
+  padding: 6px 8px;
+  font-size: 13px;
+  color: var(--ink-secondary);
+  text-decoration: none;
+}
+
+.fc .fc-day-today .fc-daygrid-day-number {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Rótulos de hora (semana/dia) */
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-timegrid-axis-cushion {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+/* Slots de meia hora ~metade da altura original (era 2.75rem) — mantém
+   labels de hora legíveis (12px muted) e nowIndicator/eventos curtos (30
+   min) visíveis; densidade maior para caber mais horas na tela. */
+.fc .fc-timegrid-slot {
+  height: 1.375rem;
+}
+
+/* Linha do "agora" */
+.fc .fc-timegrid-now-indicator-line {
+  border-color: var(--accent);
+}
+
+.fc .fc-timegrid-now-indicator-arrow {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Eventos — o conteúdo colorido (barra/dot/pill) é desenhado no eventContent
+   custom; aqui só damos a moldura (radius, recorte) e o hover sutil. */
+.fc .fc-event {
+  overflow: hidden;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: filter 150ms ease-out;
+}
+
+.fc .fc-event:hover {
+  filter: brightness(0.97);
+}
+
+.fc .fc-daygrid-event {
+  margin-top: 2px;
+  border-radius: 999px;
+}
+
+.fc .fc-daygrid-event-harness {
+  margin-top: 1px;
+}
+
+/* Convites NEEDS_ACTION: borda tracejada na cor da agenda + opacidade
+   reduzida (specs/05). A cor da borda é definida por evento via
+   `borderColor` em calendar-view.tsx; aqui só ajustamos o traço. */
+.fc .fc-event.fc-event-needs-action {
+  border-width: 1px;
+  border-style: dashed !important;
+  opacity: 0.7;
+}
+
+/* Eventos sem permissão de edição — sem cursor de arraste */
+.fc .fc-event.fc-event-readonly {
+  cursor: default;
+}
+
+/* Botão "mais" (+2 eventos) do mês */
+.fc .fc-daygrid-more-link {
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+
+/* Remove sombra de foco padrão do FC em favor do anel do design system */
+.fc .fc-event:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+@media (max-width: 640px) {
+  .fc .fc-col-header-cell-cushion {
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+
+  .fc .fc-timegrid-slot {
+    height: 1.125rem;
+  }
+}

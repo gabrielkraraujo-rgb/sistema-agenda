@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/*
+ * Tokens do design system — specs/01-design-system.md é a fonte da verdade.
+ * Superfícies, tinta, hairlines e cores de status ficam como custom
+ * properties em :root e são mapeadas para o Tailwind v4 via @theme.
+ */
+:root {
+  /* Superfícies e tinta (paleta neutra quente) */
+  --bg-page: #f9f9f7;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f3f3f0;
+  --ink-primary: #0b0b0b;
+  --ink-secondary: #52514e;
+  --ink-muted: #898781;
+  --hairline: #e1e0d9;
+  --border-ring: rgba(11, 11, 11, 0.1);
+  --accent: #2a78d6;
+  --accent-subtle: #e8f1fb;
+
+  /* Status — reservado, nunca usar como cor de agenda */
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-critical: #d03b3b;
+
+  /* Sombra opcional de card */
+  --shadow-card: 0 1px 2px rgba(11, 11, 11, 0.05);
+}
+
+@theme inline {
+  /* Cores mapeadas 1:1 com os tokens acima — nomes literais do specs/01 */
+  --color-bg-page: var(--bg-page);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-ink-primary: var(--ink-primary);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-hairline: var(--hairline);
+  --color-border-ring: var(--border-ring);
+  --color-accent: var(--accent);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-status-good: var(--status-good);
+  --color-status-warning: var(--status-warning);
+  --color-status-critical: var(--status-critical);
+
+  /* Tipografia — Inter via next/font/google (variável --font-sans no <html>) */
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+
+  /* Escala 12/13/14/16/18/24/30 — 12/14/16/18/24/30 já existem no Tailwind
+     (text-xs/sm/base/lg/2xl/3xl); falta o degrau 13 (labels/metadados). */
+  --text-13: 0.8125rem;
+  --text-13--line-height: 1.4;
+
+  /* Radius — 8px controles (rounded-sm), 12px cards (rounded-md).
+     Repropósito deliberado dos passos "sm"/"md" da escala padrão do
+     Tailwind para bater com specs/01 (ver relatório da Onda 1A). */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+}
+
+/* Estilos base */
+body {
+  background: var(--bg-page);
+  color: var(--ink-primary);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: var(--accent-subtle);
+  color: var(--ink-primary);
+}
+
+/* Keyframes utilitários — animações sutis, 150–200ms, ease-out */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes panel-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes dialog-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 150ms ease-out both;
+}
+
+.animate-overlay-in {
+  animation: overlay-in 150ms ease-out both;
+}
+
+.animate-sheet-up {
+  animation: sheet-slide-up 200ms ease-out both;
+}
+
+.animate-panel-in {
+  animation: panel-slide-in 200ms ease-out both;
+}
+
+.animate-dialog-in {
+  animation: dialog-scale-in 150ms ease-out both;
+}
+
+/* Respeita prefers-reduced-motion: desativa transforms/animações em toda
+   a aplicação (recomendação padrão — mantém o estado final visível,
+   apenas remove a interpolação de transform). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

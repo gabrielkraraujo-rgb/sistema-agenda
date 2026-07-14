@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agenda — Guia de configuração</title>
+<style>
+  :root {
+    --bg-page: #f9f9f7;
+    --bg-surface: #ffffff;
+    --bg-subtle: #f3f3f0;
+    --ink-primary: #0b0b0b;
+    --ink-secondary: #52514e;
+    --ink-muted: #898781;
+    --hairline: #e1e0d9;
+    --border-ring: rgba(11, 11, 11, 0.1);
+    --accent: #2a78d6;
+    --accent-subtle: #e8f1fb;
+    --status-good: #0ca30c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg-page);
+    color: var(--ink-primary);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    padding: 24px 16px 64px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { margin-bottom: 20px; }
+  h1 { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; }
+  .sub { color: var(--ink-secondary); margin-top: 6px; }
+  .intro {
+    margin-top: 12px; padding: 10px 14px; font-size: 13px;
+    color: var(--ink-secondary);
+    background: var(--accent-subtle); border-radius: 8px;
+  }
+  .progress-card {
+    position: sticky; top: 12px; z-index: 10;
+    background: var(--bg-surface);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin: 20px 0 28px;
+    box-shadow: 0 1px 2px rgba(11, 11, 11, 0.05);
+  }
+  .progress-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .progress-label { font-size: 13px; color: var(--ink-muted); }
+  .progress-value { font-size: 20px; font-weight: 600; }
+  .bar { height: 6px; border-radius: 999px; background: var(--bg-subtle); margin-top: 10px; overflow: hidden; }
+  .bar > div { height: 100%; width: 0%; background: var(--accent); border-radius: 999px; transition: width 200ms ease-out; }
+  section { margin-bottom: 28px; }
+  h2 {
+    font-size: 16px; font-weight: 600; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .badge {
+    font-size: 12px; font-weight: 500; color: var(--ink-secondary);
+    background: var(--bg-subtle); border: 1px solid var(--hairline);
+    border-radius: 999px; padding: 1px 8px;
+  }
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .step { border-bottom: 1px solid var(--hairline); }
+  .step:last-child { border-bottom: none; }
+  .step-head {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px; cursor: pointer; user-select: none;
+    transition: background 150ms ease-out;
+  }
+  .step-head:hover { background: var(--bg-subtle); }
+  .check {
+    flex-shrink: 0; width: 20px; height: 20px; margin-top: 1px;
+    border: 1.5px solid var(--border-ring); border-radius: 6px;
+    background: var(--bg-surface);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 150ms ease-out;
+  }
+  .check svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 3; fill: none; opacity: 0; }
+  .step.done .check { background: var(--status-good); border-color: var(--status-good); }
+  .step.done .check svg { opacity: 1; }
+  .step-title { font-weight: 500; }
+  .step.done .step-title { color: var(--ink-muted); text-decoration: line-through; }
+  .step-desc { color: var(--ink-secondary); font-size: 13px; margin-top: 2px; }
+  .step-body { padding: 0 16px 14px 48px; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12.5px;
+    background: var(--bg-subtle); border: 1px solid var(--hairline);
+    border-radius: 4px; padding: 1px 5px;
+  }
+  .note {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 8px; padding: 8px 12px; font-size: 13px;
+    color: var(--ink-secondary);
+    background: var(--accent-subtle); border-radius: 8px;
+  }
+  .note code { background: var(--bg-surface); flex: 1; overflow-x: auto; white-space: nowrap; }
+  .copy {
+    flex-shrink: 0; font-size: 12px; font-weight: 500; color: var(--ink-secondary);
+    background: var(--bg-surface); border: 1px solid var(--border-ring);
+    border-radius: 6px; padding: 3px 10px; cursor: pointer;
+    transition: all 150ms ease-out;
+  }
+  .copy:hover { border-color: var(--accent); color: var(--accent); }
+  .copy.ok { border-color: var(--status-good); color: var(--status-good); }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .reset { margin-top: 24px; text-align: center; }
+  .reset button {
+    font-size: 13px; color: var(--ink-muted); background: none;
+    border: none; cursor: pointer; text-decoration: underline;
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Agenda — Guia de configuração</h1>
+    <p class="sub">Somente o que depende de você. Clique em cada passo ao concluir — o progresso fica salvo neste navegador.</p>
+    <p class="intro">A parte técnica (instalar dependências, subir o banco, criar tabelas, rodar o sistema) é com o Claude Code: abra a pasta nele e peça <strong>"configure e rode este projeto"</strong> — ele segue as instruções que já estão no repositório. Esta lista é o que ele não pode fazer por você: contas, credenciais e autorizações.</p>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-row">
+      <span class="progress-label">Progresso da configuração</span>
+      <span class="progress-value"><span id="done-count">0</span> de <span id="total-count">0</span></span>
+    </div>
+    <div class="bar"><div id="bar-fill"></div></div>
+  </div>
+
+  <section>
+    <h2>Começando</h2>
+    <div class="card">
+      <div class="step" data-step="pasta">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Extrair a pasta do projeto e abrir no Claude Code</div>
+            <div class="step-desc">Descompacte, abra a pasta no Claude Code e peça para configurar e rodar o projeto.</div>
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="docker">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Docker Desktop instalado e aberto</div>
+            <div class="step-desc">O banco de dados local roda nele. Baixe em docker.com se não tiver — a instalação pede permissões que só você pode dar.</div>
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="login-env">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Decidir seu e-mail e senha de login</div>
+            <div class="step-desc">São os campos <code>SEED_EMAIL</code> e <code>SEED_PASSWORD</code> (mínimo 8 caracteres) do arquivo <code>.env</code> — o Claude preenche o arquivo, mas os valores são seus. É com eles que você entra no sistema.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Google Agenda <span class="badge">conta Google</span></h2>
+    <div class="card">
+      <div class="step" data-step="gcp-app">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Criar a credencial OAuth no Google Cloud</div>
+            <div class="step-desc">No <a href="https://console.cloud.google.com" target="_blank" rel="noopener">Google Cloud Console</a>, logado na SUA conta: crie um projeto → habilite a <strong>Google Calendar API</strong> → "Tela de consentimento OAuth" (modo teste; adicione seu próprio Gmail como test user) → "Credenciais" → "ID do cliente OAuth", tipo <strong>Aplicativo da Web</strong>.</div>
+          </div>
+        </div>
+        <div class="step-body">
+          <div class="note"><span>Redirect URI:</span><code>http://localhost:3000/api/oauth/google/callback</code><button class="copy">Copiar</button></div>
+        </div>
+      </div>
+      <div class="step" data-step="gcp-env">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Passar o Client ID e o Client Secret para o .env</div>
+            <div class="step-desc">Campos <code>GOOGLE_CLIENT_ID</code> e <code>GOOGLE_CLIENT_SECRET</code>. São segredos da sua conta — cole você mesmo (ou dite para o Claude preencher e reiniciar o sistema).</div>
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="g-connect">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Conectar e autorizar</div>
+            <div class="step-desc">No sistema: aba <strong>Agendas</strong> → "Conectar Google" → autorize com a sua conta. Depois defina o nome e a cor de cada agenda que apareceu (botão "Editar").</div>
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="outlook">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Opcional: Outlook</div>
+            <div class="step-desc">Mesmo processo no <a href="https://portal.azure.com" target="_blank" rel="noopener">Azure Portal</a> (App registration multitenant), redirect <code>http://localhost:3000/api/oauth/outlook/callback</code>, campos <code>MS_CLIENT_ID</code> e <code>MS_CLIENT_SECRET</code> no <code>.env</code>.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Tempo de carro e atraso <span class="badge">Google Maps</span></h2>
+    <div class="card">
+      <div class="step" data-step="maps-key">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Criar a chave do Maps</div>
+            <div class="step-desc">No mesmo projeto do Google Cloud (exige billing ativo na sua conta): habilite <strong>Routes API</strong> e <strong>Places API (New)</strong> → "Credenciais" → "Chave de API".</div>
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="maps-config">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Colar a chave em Ajustes e preencher seu endereço</div>
+            <div class="step-desc">No sistema: <strong>Ajustes → Google Maps</strong> → cole a chave e salve. Depois <strong>Perfil → Endereço</strong>: digite e selecione uma sugestão do Google ("Endereço validado"). É a sua origem para calcular o tempo até cada compromisso.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Notificações no WhatsApp <span class="badge">Evolution API</span></h2>
+    <div class="card">
+      <div class="step" data-step="evo">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Configurar a Evolution API em Ajustes</div>
+            <div class="step-desc"><strong>Ajustes → WhatsApp</strong>: URL base da sua instância Evolution, nome da instância e chave de API. Número de destino: o campo específico ou o telefone do Perfil.</div>
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="evo-test">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Enviar mensagem de teste</div>
+            <div class="step-desc">Botão "Enviar teste" na mesma tela. Chegando no seu WhatsApp, os 4 avisos estão ativos: resumo diário, lembrete antes do evento, convite novo e alerta de atraso — horários e antecedência configuráveis ali.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Finalização</h2>
+    <div class="card">
+      <div class="step" data-step="senha">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Trocar a senha no Perfil</div>
+            <div class="step-desc">Depois do primeiro login, defina uma senha definitiva em <strong>Perfil → Trocar senha</strong> (a do <code>.env</code> fica registrada em arquivo).</div>
+          </div>
+        </div>
+      </div>
+      <div class="step" data-step="final">
+        <div class="step-head">
+          <span class="check"><svg viewBox="0 0 24 24"><polyline points="4 12 10 18 20 6"/></svg></span>
+          <div>
+            <div class="step-title">Conferir o fluxo completo</div>
+            <div class="step-desc">Criar um evento com local pelo "+", arrastar no calendário para mudar o horário, conferir que apareceu no Google Agenda e abrir no celular (dá para instalar como app pelo menu do navegador).</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="reset"><button id="reset">Limpar progresso</button></div>
+</div>
+
+<script>
+  const KEY = "agenda-setup-checklist-v2";
+  const steps = Array.from(document.querySelectorAll(".step"));
+  const state = JSON.parse(localStorage.getItem(KEY) || "{}");
+
+  function render() {
+    let done = 0;
+    for (const step of steps) {
+      const isDone = !!state[step.dataset.step];
+      step.classList.toggle("done", isDone);
+      if (isDone) done++;
+    }
+    document.getElementById("done-count").textContent = done;
+    document.getElementById("total-count").textContent = steps.length;
+    document.getElementById("bar-fill").style.width = (done / steps.length) * 100 + "%";
+  }
+
+  for (const step of steps) {
+    step.querySelector(".step-head").addEventListener("click", () => {
+      state[step.dataset.step] = !state[step.dataset.step];
+      localStorage.setItem(KEY, JSON.stringify(state));
+      render();
+    });
+  }
+
+  for (const btn of document.querySelectorAll(".copy")) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(btn.previousElementSibling.textContent.trim()).then(() => {
+        btn.textContent = "Copiado";
+        btn.classList.add("ok");
+        setTimeout(() => { btn.textContent = "Copiar"; btn.classList.remove("ok"); }, 2000);
+      });
+    });
+  }
+
+  document.getElementById("reset").addEventListener("click", () => {
+    localStorage.removeItem(KEY);
+    for (const k in state) delete state[k];
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>

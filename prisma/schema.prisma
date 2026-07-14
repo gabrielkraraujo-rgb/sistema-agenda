@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Usuário único e sessões ──────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone          String? // E.164, destino padrão do WhatsApp
+  address        String? // endereço base para cálculo de rotas
+  addressPlaceId String? // placeId do Google (Places New) — origem validada
+  addressLat     Float? // legado (fluxo antigo de geocoding)
+  addressLng     Float?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id // sha256 hex do token (o token em si só vive no cookie)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ── Contas conectadas e agendas ──────────────────────────────────────────
+
+enum CalendarProvider {
+  LOCAL
+  GOOGLE
+  OUTLOOK
+}
+
+model ConnectedAccount {
+  id             String           @id @default(cuid())
+  provider       CalendarProvider
+  email          String
+  accessToken    String // criptografado (AES-256-GCM via lib/crypto)
+  refreshToken   String // criptografado
+  tokenExpiresAt DateTime?
+  scope          String?
+  lastSyncAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  calendars      Calendar[]
+
+  @@unique([provider, email])
+}
+
+model Calendar {
+  id         String            @id @default(cuid())
+  name       String
+  color      String // hex de um dos 8 slots da paleta (specs/01)
+  provider   CalendarProvider  @default(LOCAL)
+  accountId  String?
+  account    ConnectedAccount? @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  externalId String? // id da agenda no provedor
+  syncToken  String? // Google syncToken / Graph deltaLink
+  isVisible  Boolean           @default(true)
+  isDefault  Boolean           @default(false)
+  isReadOnly Boolean           @default(false) // agenda sem permissão de escrita no provedor
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  events     Event[]
+
+  @@unique([accountId, externalId])
+}
+
+// ── Eventos ──────────────────────────────────────────────────────────────
+
+enum EventStatus {
+  CONFIRMED
+  TENTATIVE
+  CANCELLED
+}
+
+enum InviteStatus {
+  NONE // evento normal
+  NEEDS_ACTION // solicitação pendente (aparece no contador do dashboard)
+  ACCEPTED
+  DECLINED
+}
+
+model Event {
+  id             String       @id @default(cuid())
+  calendarId     String
+  calendar       Calendar     @relation(fields: [calendarId], references: [id], onDelete: Cascade)
+  title          String
+  description    String?
+  location       String?
+  videoLink      String?
+  startAt        DateTime
+  endAt          DateTime
+  allDay         Boolean      @default(false)
+  status         EventStatus  @default(CONFIRMED)
+  inviteStatus   InviteStatus @default(NONE)
+  organizerEmail String?
+  attendees      Json? // [{ email, name?, response? }]
+  reminderMinutes Int? // null = usa o padrão global de Settings
+
+  // Recorrência: RRULE fica no evento "mestre"; exceções apontam para ele
+  rrule            String?
+  recurringEventId String?
+  originalStartAt  DateTime? // startAt original da ocorrência substituída
+
+  // Sync externo
+  externalId        String?
+  etag              String? // etag (Google) / changeKey (Graph)
+  externalUpdatedAt DateTime?
+
+  // Cache do cálculo de rota (Google Maps)
+  locationPlaceId   String? // placeId do local (Places New) — destino validado
+  locationLat       Float? // legado (fluxo antigo de geocoding)
+  locationLng       Float?
+  travelDurationMin Int?
+  travelDistanceKm  Float?
+  travelCheckedAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([calendarId, externalId])
+  @@index([startAt, endAt])
+  @@index([inviteStatus])
+  @@index([recurringEventId])
+}
+
+// ── Configurações (linha única, id = 1) ──────────────────────────────────
+
+model Settings {
+  id Int @id @default(1)
+
+  // Evolution API (WhatsApp)
+  evolutionBaseUrl     String?
+  evolutionInstance    String?
+  evolutionApiKey      String? // criptografado
+  whatsappTargetNumber String? // se null, usa User.phone
+
+  // Google Maps
+  googleMapsApiKey String? // criptografado
+
+  // Notificações
+  notifyDailySummary     Boolean @default(true)
+  dailySummaryTime       String  @default("07:00") // HH:mm America/Sao_Paulo
+  notifyEventReminder    Boolean @default(true)
+  defaultReminderMinutes Int     @default(30)
+  notifyNewInvite        Boolean @default(true)
+  notifyLateAlert        Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+}
+
+// ── Antiduplicação de notificações ───────────────────────────────────────
+
+enum NotificationType {
+  DAILY_SUMMARY
+  EVENT_REMINDER
+  NEW_INVITE
+  LATE_ALERT
+}
+
+model NotificationLog {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  eventId   String?
+  dedupeKey String           @unique // ex: "reminder:<eventId>:<occurrenceStartISO>"
+  sentAt    DateTime         @default(now())
+}
