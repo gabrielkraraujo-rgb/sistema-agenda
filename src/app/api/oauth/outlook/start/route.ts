@@ -43,6 +43,9 @@ export async function GET(request: NextRequest) {
   authorize.searchParams.set("response_mode", "query");
   authorize.searchParams.set("scope", OUTLOOK_SCOPES);
   authorize.searchParams.set("state", state);
+  // Sem isto o SSO da Microsoft reutiliza silenciosamente a sessão ativa,
+  // impedindo de vincular uma segunda conta — força o seletor de contas.
+  authorize.searchParams.set("prompt", "select_account");
 
   const response = NextResponse.redirect(authorize);
   response.cookies.set(STATE_COOKIE, state, {
